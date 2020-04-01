@@ -23,7 +23,7 @@ use log::{warn, trace};
 use hash_db::Hasher;
 use codec::{Decode, Encode, Codec};
 use sp_core::{
-	offchain::storage::InMemOffchainStorage,
+	offchain::storage::OffchainOverlayedChanges,
 	storage::ChildInfo, NativeOrEncoded, NeverNativeValue, hexdisplay::HexDisplay,
 	traits::{CodeExecutor, CallInWasmExt, RuntimeCode},
 };
@@ -188,7 +188,7 @@ pub struct StateMachine<'a, B, H, N, Exec>
 	method: &'a str,
 	call_data: &'a [u8],
 	overlay: &'a mut OverlayedChanges,
-	offchain_overlay: &'a mut InMemOffchainStorage,
+	offchain_overlay: &'a mut OffchainOverlayedChanges,
 	extensions: Extensions,
 	changes_trie_state: Option<ChangesTrieState<'a, H, N>>,
 	_marker: PhantomData<(H, N)>,
@@ -208,7 +208,7 @@ impl<'a, B, H, N, Exec> StateMachine<'a, B, H, N, Exec> where
 		backend: &'a B,
 		changes_trie_state: Option<ChangesTrieState<'a, H, N>>,
 		overlay: &'a mut OverlayedChanges,
-		offchain_overlay: &'a mut InMemOffchainStorage,
+		offchain_overlay: &'a mut OffchainOverlayedChanges,
 		exec: &'a Exec,
 		method: &'a str,
 		call_data: &'a [u8],
@@ -495,7 +495,7 @@ where
 	Exec: CodeExecutor + 'static + Clone,
 	N: crate::changes_trie::BlockNumber,
 {
-	let mut offchain_overlay = InMemOffchainStorage::default();
+	let mut offchain_overlay = OffchainOverlayedChanges::default();
 	let proving_backend = proving_backend::ProvingBackend::new(trie_backend);
 	let mut sm = StateMachine::<_, H, N, Exec>::new(
 		&proving_backend,
@@ -563,7 +563,7 @@ where
 	Exec: CodeExecutor + Clone + 'static,
 	N: crate::changes_trie::BlockNumber,
 {
-	let mut offchain_overlay = InMemOffchainStorage::default();
+	let mut offchain_overlay = OffchainOverlayedChanges::default();
 	let mut sm = StateMachine::<_, H, N, Exec>::new(
 		trie_backend,
 		None,
